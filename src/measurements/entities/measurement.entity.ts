@@ -1,1 +1,67 @@
-export class Measurement {}
+
+import { NotFoundException } from "@nestjs/common";
+import { Temperature } from "../domain/valueObjects/temperature";
+import { Humidity } from "../domain/valueObjects/humidity";
+import { AtmosphericPressure } from "../domain/valueObjects/atmosphericPressure";
+import { AlertType } from "../domain/enums/alertTypes";
+
+export class Measurement {
+  constructor(
+    public weatherStationId: string,
+    public timestamp: Date,
+    public temperature: Temperature,
+    public humidity: Humidity,
+    public atmosphericPressure: AtmosphericPressure,
+    public alarmType: AlertType | null,
+  ) {
+    this.validate();
+  }
+
+  static create(props: {
+    weatherStationId: string;
+    temperature: Temperature;
+    humidity: Humidity;
+    atmosphericPressure: AtmosphericPressure;
+  }): Measurement {
+    const alarmType = this.calculateAlarmType(props);
+
+    return new Measurement(
+      props.weatherStationId,
+      new Date(),
+      props.temperature,
+      props.humidity,
+      props.atmosphericPressure,
+      alarmType,
+    );
+  }
+
+  get isAnomaly(): boolean {
+    return this.alarmType !== null && this.alarmType !== AlertType.NONE;
+  }
+
+  private validate() {
+    if (this.temperature.value < -90 || this.temperature.value > 60) {
+      throw new NotFoundException('Temperature out of range');
+    }
+
+    if (this.humidity.value < 0 || this.humidity.value > 100) {
+      throw new NotFoundException('Humidity out of range');
+    }
+
+    if (this.atmosphericPressure.value < 300 || this.atmosphericPressure.value > 1100) {
+      throw new NotFoundException('Pressure out of range');
+    }
+  }
+
+  private static calculateAlarmType(input: {
+    temperature: Temperature;
+    humidity: Humidity;
+    atmosphericPressure: AtmosphericPressure;
+  }): AlertType | null {
+    if (input.temperature.value > 40) return AlertType.HEAT_WAVE;
+    if (input.temperature.value < 0) return AlertType.FROST;
+    if (input.atmosphericPressure.value < 980) return AlertType.LOW_PRESSURE;
+    if (input.humidity.value > 90) return AlertType.HIGH_HUMIDITY;
+    return AlertType.NONE;
+  }
+}
