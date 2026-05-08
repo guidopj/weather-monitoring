@@ -17,9 +17,14 @@ export class WeatherStationsController {
     return this.weatherStationsService.findAll();
   }
 
-  @Get(':id')
+  @Get('by-id/:id')
   findOne(@Param('id') id: string) {
     return this.weatherStationsService.findOne(+id);
+  }
+
+  @Get("by-name/:name")
+  findByName(@Param("name") name: string){
+    return this.weatherStationsService.findByName(name)
   }
 
   @Patch(':id')

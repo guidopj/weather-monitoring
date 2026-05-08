@@ -1,9 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { CreateWeatherStationDto } from './dto/create-weather-station.dto';
 import { UpdateWeatherStationDto } from './dto/update-weather-station.dto';
+import { WeatherStationRepository } from './domain/repositories/weather-stations.repository';
 
 @Injectable()
 export class WeatherStationsService {
+  constructor(private readonly weatherStationRepo: WeatherStationRepository){}
+
   create(createWeatherStationDto: CreateWeatherStationDto) {
     return 'This action adds a new weatherStation';
   }
@@ -13,7 +16,11 @@ export class WeatherStationsService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} weatherStation`;
+    return `This action returns aaa #${id} weatherStation`;
+  }
+
+  findByName(name: string) {
+    return this.weatherStationRepo.findByName(name)
   }
 
   update(id: number, updateWeatherStationDto: UpdateWeatherStationDto) {
